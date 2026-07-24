@@ -49,4 +49,5 @@ class PageController extends Controller
         
         return view('services', compact('services'));
     }
+    
 }
