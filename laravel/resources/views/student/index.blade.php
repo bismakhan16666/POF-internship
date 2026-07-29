@@ -13,7 +13,7 @@
             min-height: 100vh;
             padding: 40px 20px;
         }
-        .container { max-width: 1000px; margin: 0 auto; }
+        .container { max-width: 1100px; margin: 0 auto; }
         .header {
             display: flex;
             justify-content: space-between;
@@ -57,6 +57,34 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         }
+        .btn-edit {
+            color: #4facfe;
+            text-decoration: none;
+            padding: 5px 15px;
+            border: 1px solid #4facfe;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            transition: 0.3s;
+        }
+        .btn-edit:hover {
+            background: #4facfe;
+            color: #fff;
+        }
+        .btn-delete {
+            color: #f5576c;
+            text-decoration: none;
+            padding: 5px 15px;
+            border: 1px solid #f5576c;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            background: transparent;
+            transition: 0.3s;
+        }
+        .btn-delete:hover {
+            background: #f5576c;
+            color: #fff;
+        }
         .success-msg {
             background: rgba(56, 239, 125, 0.12);
             padding: 12px 18px;
@@ -65,6 +93,15 @@
             font-size: 0.9rem;
             margin-bottom: 20px;
             border: 1px solid rgba(56, 239, 125, 0.15);
+        }
+        .error-msg {
+            background: rgba(245, 87, 108, 0.12);
+            padding: 12px 18px;
+            border-radius: 10px;
+            color: #f5576c;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            border: 1px solid rgba(245, 87, 108, 0.15);
         }
         .table-wrapper {
             background: rgba(255,255,255,0.04);
@@ -126,6 +163,10 @@
             <div class="success-msg">{{ session('success') }}</div>
         @endif
 
+        @if(session('error'))
+            <div class="error-msg">{{ session('error') }}</div>
+        @endif
+
         <div class="table-wrapper">
             @if($students->isEmpty())
                 <div class="empty">No students found. <a href="{{ route('students.create') }}" style="color:#667eea;">Add one</a></div>
@@ -137,6 +178,7 @@
                         <th>Email</th>
                         <th>Age</th>
                         <th>Course</th>
+                        <th>Actions</th>
                     </tr>
                     @foreach($students as $student)
                         <tr>
@@ -145,6 +187,14 @@
                             <td>{{ $student->email }}</td>
                             <td>{{ $student->age }}</td>
                             <td>{{ $student->course }}</td>
+                            <td>
+                                <a href="{{ route('students.edit', $student->id) }}" class="btn-edit">Edit</a>
+                                <form action="{{ route('students.destroy', $student->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-delete" onclick="return confirm('Are you sure you want to delete this student?')">Delete</button>
+                                </form>
+                            </td>
                         </tr>
                     @endforeach
                 </table>
@@ -152,7 +202,7 @@
         </div>
 
         <div class="footer">
-            &copy; 2026 Bisma Khan • Laravel Internship • Day 8
+            &copy; 2026 Bisma Khan • Laravel Internship • Day 9
         </div>
 
     </div>
