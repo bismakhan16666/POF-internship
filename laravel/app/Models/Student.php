@@ -15,4 +15,10 @@ class Student extends Model
         'age',
         'course'
     ];
+
+    // Many-to-Many relationship with Courses
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class)->withPivot('enrollment_date')->withTimestamps();
+    }
 }

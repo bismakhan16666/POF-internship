@@ -37,8 +37,6 @@
         </div>
     @else
         <div class="table-responsive">
-            <!-- ===== Yeh line IMPORTANT hai ===== -->
-            <!-- "table" class hata di aur sirf "table-custom" rakha -->
             <table class="table-custom" style="width: 100%; border-collapse: collapse; color: #ffffff;">
                 <thead>
                     <tr>
@@ -53,14 +51,12 @@
                 <tbody>
                     @foreach($students as $student)
                         <tr style="background: rgba(255,255,255,0.03); border-radius: 12px; transition: all 0.3s ease;">
-                            <!-- ===== Yeh line IMPORTANT hai ===== -->
-                            <!-- ID ko purple rakha hai lekin baqi sab white ===== -->
                             <td style="color: #667eea; font-weight: 700; padding: 14px 18px; border: none; border-radius: 12px 0 0 12px;">#{{ $student->id }}</td>
-                            <td style="color: #ffffff !important; font-weight: 600; padding: 14px 18px; border: none;">{{ $student->name }}</td>
-                            <td style="color: #ffffff !important; padding: 14px 18px; border: none;">{{ $student->email }}</td>
-                            <td style="color: #ffffff !important; padding: 14px 18px; border: none;">{{ $student->age }}</td>
+                            <td style="color: #ffffff; font-weight: 600; padding: 14px 18px; border: none;">{{ $student->name }}</td>
+                            <td style="color: #ffffff; padding: 14px 18px; border: none;">{{ $student->email }}</td>
+                            <td style="color: #ffffff; padding: 14px 18px; border: none;">{{ $student->age }}</td>
                             <td style="padding: 14px 18px; border: none;">
-                                <span style="background: #667eea; border: none; padding: 4px 14px; border-radius: 50px; font-size: 0.8rem; color: #ffffff !important; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                                <span style="background: #667eea; border: none; padding: 4px 14px; border-radius: 50px; font-size: 0.8rem; color: #ffffff; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
                                     {{ $student->course }}
                                 </span>
                             </td>
@@ -68,6 +64,14 @@
                                 <a href="{{ route('students.edit', $student->id) }}" 
                                    style="background: #667eea; border: none; color: #ffffff; padding: 4px 14px; border-radius: 50px; font-weight: 500; font-size: 0.75rem; text-decoration: none; display: inline-block; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
                                     <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <a href="/student/{{ $student->id }}/courses" 
+                                   style="background: #38ef7d; border: none; color: #000000; padding: 4px 14px; border-radius: 50px; font-weight: 500; font-size: 0.75rem; text-decoration: none; display: inline-block; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(56, 239, 125, 0.3);">
+                                    <i class="fas fa-book"></i> Courses
+                                </a>
+                                <a href="/students/{{ $student->id }}/enroll-form" 
+                                   style="background: #4facfe; border: none; color: #ffffff; padding: 4px 14px; border-radius: 50px; font-weight: 500; font-size: 0.75rem; text-decoration: none; display: inline-block; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);">
+                                    <i class="fas fa-plus"></i> Enroll
                                 </a>
                                 <form action="{{ route('students.destroy', $student->id) }}" 
                                       method="POST" style="display:inline;">
@@ -91,7 +95,6 @@
 </div>
 
 <style>
-    /* ===== IMPORTANT: Force white color on table data ===== */
     .table-custom {
         width: 100%;
         border-collapse: collapse;
@@ -120,7 +123,7 @@
     .table-custom tbody td {
         padding: 14px 18px;
         border: none;
-        color: #ffffff !important;  /* Yeh line force white karegi */
+        color: #ffffff !important;
         vertical-align: middle;
         font-size: 0.95rem;
     }

@@ -10,10 +10,14 @@ return new class extends Migration
     {
         Schema::create('course_student', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained()->onDelete('cascade');
-            $table->foreignId('course_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('student_id');
+            $table->unsignedBigInteger('course_id');
             $table->date('enrollment_date');
             $table->timestamps();
+
+            // Foreign key constraints
+            $table->foreign('student_id')->references('id')->on('students')->onDelete('cascade');
+            $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');
         });
     }
 
