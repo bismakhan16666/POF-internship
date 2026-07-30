@@ -95,43 +95,10 @@
 </div>
 
 <style>
-    .table-custom {
-        width: 100%;
-        border-collapse: collapse;
-        color: #ffffff !important;
-    }
-    .table-custom thead th {
-        background: rgba(255,255,255,0.03);
-        color: rgba(255,255,255,0.5) !important;
-        font-weight: 700;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        padding: 14px 18px;
-        border: none;
-    }
-    .table-custom tbody tr {
-        background: rgba(255,255,255,0.03);
-        border-radius: 12px;
-        transition: all 0.3s ease;
-    }
     .table-custom tbody tr:hover {
         background: rgba(255,255,255,0.06) !important;
         transform: scale(1.01);
         box-shadow: 0 8px 30px rgba(0,0,0,0.3);
-    }
-    .table-custom tbody td {
-        padding: 14px 18px;
-        border: none;
-        color: #ffffff !important;
-        vertical-align: middle;
-        font-size: 0.95rem;
-    }
-    .table-custom tbody td:first-child {
-        border-radius: 12px 0 0 12px;
-    }
-    .table-custom tbody td:last-child {
-        border-radius: 0 12px 12px 0;
     }
 </style>
 
