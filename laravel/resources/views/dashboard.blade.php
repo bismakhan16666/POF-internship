@@ -13,8 +13,6 @@
             background: linear-gradient(135deg, #0d0d2b, #1a1a4e);
             padding: 20px;
         }
-
-        /* ===== NAVBAR ===== */
         .navbar {
             background: rgba(255,255,255,0.03);
             backdrop-filter: blur(20px);
@@ -67,13 +65,10 @@
         .navbar .user-info .logout-btn:hover {
             background: rgba(245,87,108,0.1);
         }
-
-        /* ===== DASHBOARD CONTENT ===== */
         .dashboard-container {
             max-width: 700px;
             margin: 0 auto;
         }
-
         .welcome-card {
             background: rgba(255,255,255,0.03);
             backdrop-filter: blur(20px);
@@ -83,7 +78,6 @@
             box-shadow: 0 25px 60px rgba(0,0,0,0.4);
             text-align: center;
         }
-
         .welcome-card h1 {
             font-size: 2.2rem;
             font-weight: 700;
@@ -100,8 +94,6 @@
             font-size: 1rem;
             margin-top: 8px;
         }
-
-        /* ===== STATS ===== */
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -131,8 +123,6 @@
             font-weight: 700;
             margin-top: 4px;
         }
-
-        /* ===== BUTTONS ===== */
         .actions {
             display: flex;
             flex-wrap: wrap;
@@ -173,8 +163,6 @@
         .btn-blue:hover {
             box-shadow: 0 12px 40px rgba(79,172,254,0.25);
         }
-
-        /* ===== FOOTER ===== */
         .footer {
             text-align: center;
             margin-top: 20px;
@@ -183,7 +171,6 @@
             color: rgba(255,255,255,0.06);
             font-size: 0.75rem;
         }
-
         @media (max-width: 600px) {
             .navbar { flex-direction: column; text-align: center; }
             .welcome-card { padding: 30px 20px; }
@@ -223,11 +210,11 @@
                 </div>
                 <div class="stat-card">
                     <div class="label">Courses</div>
-                    <div class="value">0</div>
+                    <div class="value">{{ \App\Models\Course::count() }}</div>
                 </div>
                 <div class="stat-card">
                     <div class="label">Enrollments</div>
-                    <div class="value">0</div>
+                    <div class="value">{{ \App\Models\Student::with('courses')->get()->sum(fn($s) => $s->courses->count()) }}</div>
                 </div>
             </div>
 

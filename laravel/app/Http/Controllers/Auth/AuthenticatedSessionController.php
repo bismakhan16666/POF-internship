@@ -28,11 +28,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // ============================================
-        // YAHAN REDIRECT CHANGE KIYA HAI
-        // Pehle '/' tha, ab '/students' hai
-        // ============================================
-        return redirect()->intended('/students');
+        return redirect()->intended('/dashboard');
     }
 
     /**
@@ -47,5 +43,13 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    /**
+     * Redirect after login.
+     */
+    protected function redirectTo()
+    {
+        return '/dashboard';
     }
 }
