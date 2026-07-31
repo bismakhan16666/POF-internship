@@ -7,54 +7,46 @@ use App\Models\Student;
 
 class StudentController extends Controller
 {
-    /**
-     * Display a listing of the students.
-     */
     public function index()
     {
         $students = Student::all();
         return view('student.index', compact('students'));
     }
 
-    /**
-     * Show the form for creating a new student.
-     */
     public function create()
     {
         return view('student.create');
     }
 
-    /**
-     * Store a newly created student in the database.
-     */
     public function store(Request $request)
     {
-        // Validation
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:students,email',
             'age' => 'required|integer|min:1|max:150',
-            'course' => 'required|string|max:255'
+            'course' => 'required|string|max:255',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        // Insert Data
+        $avatarPath = null;
+        if ($request->hasFile('avatar')) {
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+        }
+
         Student::create([
             'name' => $request->name,
             'email' => $request->email,
             'age' => $request->age,
-            'course' => $request->course
+            'course' => $request->course,
+            'avatar' => $avatarPath,
         ]);
 
         return redirect('/students')->with('success', 'Student added successfully!');
     }
 
-    /**
-     * Show the form for editing the specified student.
-     */
     public function edit($id)
     {
         $student = Student::find($id);
-
         if ($student) {
             return view('student.edit', compact('student'));
         } else {
@@ -62,9 +54,6 @@ class StudentController extends Controller
         }
     }
 
-    /**
-     * Update the specified student in the database.
-     */
     public function update(Request $request, $id)
     {
         $student = Student::find($id);
@@ -73,33 +62,43 @@ class StudentController extends Controller
             return redirect('/students')->with('error', 'Student not found!');
         }
 
-        // Validation
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:students,email,' . $id,
             'age' => 'required|integer|min:1|max:150',
-            'course' => 'required|string|max:255'
+            'course' => 'required|string|max:255',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        // Update Data
+        $avatarPath = $student->avatar;
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if exists
+            if ($student->avatar && file_exists(storage_path('app/public/' . $student->avatar))) {
+                unlink(storage_path('app/public/' . $student->avatar));
+            }
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+        }
+
         $student->update([
             'name' => $request->name,
             'email' => $request->email,
             'age' => $request->age,
-            'course' => $request->course
+            'course' => $request->course,
+            'avatar' => $avatarPath,
         ]);
 
         return redirect('/students')->with('success', 'Student updated successfully!');
     }
 
-    /**
-     * Remove the specified student from the database.
-     */
     public function destroy($id)
     {
         $student = Student::find($id);
 
         if ($student) {
+            // Delete avatar if exists
+            if ($student->avatar && file_exists(storage_path('app/public/' . $student->avatar))) {
+                unlink(storage_path('app/public/' . $student->avatar));
+            }
             $student->delete();
             return redirect('/students')->with('success', 'Student deleted successfully!');
         } else {

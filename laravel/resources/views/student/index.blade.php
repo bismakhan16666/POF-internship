@@ -40,6 +40,7 @@
             <table class="table-custom" style="width: 100%; border-collapse: collapse; color: #ffffff;">
                 <thead>
                     <tr>
+                        <th style="background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.5); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; padding: 14px 18px; border: none;">Avatar</th>
                         <th style="background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.5); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; padding: 14px 18px; border: none;">ID</th>
                         <th style="background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.5); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; padding: 14px 18px; border: none;">Name</th>
                         <th style="background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.5); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; padding: 14px 18px; border: none;">Email</th>
@@ -50,13 +51,24 @@
                 </thead>
                 <tbody>
                     @foreach($students as $student)
+                        @php
+                            $boyNames = ['Ahmed Ali', 'Hassan Ali'];
+                            $defaultAvatar = in_array($student->name, $boyNames) 
+                                ? asset('storage/images/default-boy-avatar.png') 
+                                : asset('storage/images/default-avatar.png');
+                        @endphp
                         <tr style="background: rgba(255,255,255,0.03); border-radius: 12px; transition: all 0.3s ease;">
-                            <td style="color: #667eea; font-weight: 700; padding: 14px 18px; border: none; border-radius: 12px 0 0 12px;">#{{ $student->id }}</td>
+                            <td style="padding: 14px 18px; border: none; border-radius: 12px 0 0 12px;">
+                                <img src="{{ $student->avatar ? asset('storage/' . $student->avatar) : $defaultAvatar }}" 
+                                     alt="{{ $student->name }}" 
+                                     style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.1);">
+                            </td>
+                            <td style="color: #667eea; font-weight: 700; padding: 14px 18px; border: none;">#{{ $student->id }}</td>
                             <td style="color: #ffffff; font-weight: 600; padding: 14px 18px; border: none;">{{ $student->name }}</td>
                             <td style="color: #ffffff; padding: 14px 18px; border: none;">{{ $student->email }}</td>
                             <td style="color: #ffffff; padding: 14px 18px; border: none;">{{ $student->age }}</td>
                             <td style="padding: 14px 18px; border: none;">
-                                <span style="background: #667eea; border: none; padding: 4px 14px; border-radius: 50px; font-size: 0.8rem; color: #ffffff; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                                <span style="background: #667eea; border: none; padding: 4px 14px; border-radius: 50px; font-size: 0.8rem; color: #ffffff; font-weight: 600;">
                                     {{ $student->course }}
                                 </span>
                             </td>

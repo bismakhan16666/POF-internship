@@ -27,7 +27,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('students.store') }}" method="POST">
+            <form action="{{ route('students.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 <div class="mb-3">
@@ -70,6 +70,20 @@
                            placeholder="Enter course name" 
                            value="{{ old('course') }}" required>
                     @error('course')
+                        <div class="text-error">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- ===== AVATAR FIELD ===== -->
+                <div class="mb-4">
+                    <label for="avatar" class="form-label-custom">Profile Picture</label>
+                    <input type="file" name="avatar" id="avatar" 
+                           class="form-control-custom" 
+                           accept="image/*">
+                    <p style="color: rgba(255,255,255,0.3); font-size: 0.75rem; margin-top: 5px;">
+                        Supported formats: JPEG, PNG, JPG, GIF (Max: 2MB)
+                    </p>
+                    @error('avatar')
                         <div class="text-error">{{ $message }}</div>
                     @enderror
                 </div>

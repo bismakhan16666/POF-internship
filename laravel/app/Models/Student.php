@@ -13,10 +13,19 @@ class Student extends Model
         'name',
         'email',
         'age',
-        'course'
+        'course',
+        'avatar'
     ];
 
-    // Many-to-Many relationship with Courses
+    // Get avatar URL
+    public function getAvatarUrlAttribute()
+    {
+        if ($this->avatar) {
+            return asset('storage/' . $this->avatar);
+        }
+        return asset('images/default-avatar.png');
+    }
+
     public function courses()
     {
         return $this->belongsToMany(Course::class)->withPivot('enrollment_date')->withTimestamps();
