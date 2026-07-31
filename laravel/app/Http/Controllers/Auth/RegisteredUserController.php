@@ -54,6 +54,6 @@ class RegisteredUserController extends Controller
      */
     protected function redirectTo()
     {
-        return '/dashboard';
+        return '/admin/dashboard';
     }
 }

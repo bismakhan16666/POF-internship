@@ -61,6 +61,16 @@
         }
 
         /* ===== NAVBAR ===== */
+        @auth
+           @if(Auth::user()->isAdmin())
+              <li class="nav-item">
+                <a class="nav-link" href="{{ route('admin.dashboard') }}">
+                <i class="fas fa-shield-alt"></i> Admin
+                </a>
+              </li>
+            @endif
+        @endauth
+        
         .navbar-custom {
             background: rgba(255,255,255,0.03) !important;
             backdrop-filter: blur(30px);

@@ -55,6 +55,7 @@
             box-shadow: 0 0 30px rgba(102,126,234,0.05);
         }
         .form-group input::placeholder { color: rgba(255,255,255,0.2); }
+        .error-msg { color: #f5576c; font-size: 0.8rem; margin-top: 6px; }
         .form-options {
             display: flex;
             justify-content: space-between;
@@ -107,11 +108,6 @@
             transition: 0.3s;
         }
         .footer-text a:hover { color: #667eea; }
-        .error-msg {
-            color: #f5576c;
-            font-size: 0.8rem;
-            margin-top: 6px;
-        }
         .alert-success {
             color: #38ef7d;
             background: rgba(56,239,125,0.06);

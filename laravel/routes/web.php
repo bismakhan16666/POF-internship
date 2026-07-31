@@ -139,11 +139,62 @@ Route::get('/seed-students', function () {
 });
 
 // ============================================
-// DAY 12 - AUTHENTICATION (LARAVEL BREEZE)
+// DAY 13 - ADMIN DASHBOARD (Protected)
 // ============================================
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/dashboard', function () {
+        return view('admin.dashboard');
+    })->name('admin.dashboard');
+});
 
-require __DIR__.'/auth.php';
+// ============================================
+// AUTHENTICATION ROUTES
+// ============================================
+
+// Login
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login');
+
+Route::post('/login', function () {
+    $credentials = request()->only('email', 'password');
+
+    if (auth()->attempt($credentials)) {
+        return redirect('/admin/dashboard');
+    }
+
+    return back()->withErrors([
+        'email' => 'The provided credentials do not match our records.',
+    ]);
+});
+
+// Register
+Route::get('/register', function () {
+    return view('auth.register');
+})->name('register');
+
+Route::post('/register', function () {
+    $data = request()->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users',
+        'password' => 'required|confirmed|min:8',
+    ]);
+
+    $user = App\Models\User::create([
+        'name' => $data['name'],
+        'email' => $data['email'],
+        'password' => bcrypt($data['password']),
+        'role' => 'student',
+    ]);
+
+    auth()->login($user);
+
+    return redirect('/admin/dashboard');
+});
+
+// Logout
+Route::post('/logout', function () {
+    auth()->logout();
+    return redirect('/login');
+})->name('logout');
