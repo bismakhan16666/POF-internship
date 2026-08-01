@@ -14,15 +14,10 @@ Route::get('/', function () {
 });
 
 // ============================================
-// DAY 8 & 9 - STUDENT CRUD
+// DAY 8 & 9 - STUDENT CRUD (Resource Controller)
 // ============================================
 
-Route::get('/students', [StudentController::class, 'index'])->name('students.index');
-Route::get('/students/create', [StudentController::class, 'create'])->name('students.create');
-Route::post('/students', [StudentController::class, 'store'])->name('students.store');
-Route::get('/students/{id}/edit', [StudentController::class, 'edit'])->name('students.edit');
-Route::put('/students/{id}', [StudentController::class, 'update'])->name('students.update');
-Route::delete('/students/{id}', [StudentController::class, 'destroy'])->name('students.destroy');
+Route::resource('students', StudentController::class);
 
 // ============================================
 // DAY 11 - ELOQUENT RELATIONSHIPS
@@ -124,11 +119,11 @@ Route::get('/seed-students', function () {
     App\Models\Student::truncate();
     
     $students = [
-        ['name' => 'Bisma Khan', 'email' => 'bisma@example.com', 'age' => 22, 'course' => 'Laravel Internship'],
-        ['name' => 'Ahmed Ali', 'email' => 'ahmed@example.com', 'age' => 24, 'course' => 'Web Development'],
-        ['name' => 'Fatima Khan', 'email' => 'fatima@example.com', 'age' => 23, 'course' => 'Laravel Internship'],
-        ['name' => 'Hassan Ali', 'email' => 'hassan@example.com', 'age' => 25, 'course' => 'Database Management'],
-        ['name' => 'Ayesha Khan', 'email' => 'ayesha@example.com', 'age' => 21, 'course' => 'Laravel Internship']
+        ['name' => 'Bisma Khan', 'email' => 'bisma@example.com', 'age' => 22, 'course' => 'Laravel Internship', 'avatar' => null],
+        ['name' => 'Ahmed Ali', 'email' => 'ahmed@example.com', 'age' => 24, 'course' => 'Web Development', 'avatar' => null],
+        ['name' => 'Fatima Khan', 'email' => 'fatima@example.com', 'age' => 23, 'course' => 'Laravel Internship', 'avatar' => null],
+        ['name' => 'Hassan Ali', 'email' => 'hassan@example.com', 'age' => 25, 'course' => 'Database Management', 'avatar' => null],
+        ['name' => 'Ayesha Khan', 'email' => 'ayesha@example.com', 'age' => 21, 'course' => 'Laravel Internship', 'avatar' => null]
     ];
     
     foreach ($students as $student) {
@@ -139,7 +134,37 @@ Route::get('/seed-students', function () {
 });
 
 // ============================================
-// DAY 13 - ADMIN DASHBOARD (Protected)
+// SEED MORE STUDENTS (For Pagination)
+// ============================================
+
+Route::get('/seed-more-students', function () {
+    $students = [
+        ['name' => 'Usman Ali', 'email' => 'usman@example.com', 'age' => 22, 'course' => 'Laravel Internship', 'avatar' => null],
+        ['name' => 'Zara Khan', 'email' => 'zara@example.com', 'age' => 21, 'course' => 'Web Development', 'avatar' => null],
+        ['name' => 'Omar Farooq', 'email' => 'omar@example.com', 'age' => 23, 'course' => 'Database Management', 'avatar' => null],
+        ['name' => 'Hira Batool', 'email' => 'hira@example.com', 'age' => 24, 'course' => 'Laravel Internship', 'avatar' => null],
+        ['name' => 'Rayan Ahmed', 'email' => 'rayan@example.com', 'age' => 22, 'course' => 'Web Development', 'avatar' => null],
+        ['name' => 'Sara Khan', 'email' => 'sara@example.com', 'age' => 21, 'course' => 'Laravel Internship', 'avatar' => null],
+        ['name' => 'Hamza Ali', 'email' => 'hamza@example.com', 'age' => 25, 'course' => 'Database Management', 'avatar' => null],
+        ['name' => 'Areeba Khan', 'email' => 'areeba@example.com', 'age' => 23, 'course' => 'Laravel Internship', 'avatar' => null],
+        ['name' => 'Zain Ahmed', 'email' => 'zain@example.com', 'age' => 24, 'course' => 'Web Development', 'avatar' => null],
+        ['name' => 'Mahnoor Ali', 'email' => 'mahnoor@example.com', 'age' => 22, 'course' => 'Laravel Internship', 'avatar' => null],
+        ['name' => 'Hasan Raza', 'email' => 'hasan@example.com', 'age' => 23, 'course' => 'Database Management', 'avatar' => null],
+        ['name' => 'Iman Khan', 'email' => 'iman@example.com', 'age' => 21, 'course' => 'Laravel Internship', 'avatar' => null],
+        ['name' => 'Daniyal Ahmed', 'email' => 'daniyal@example.com', 'age' => 24, 'course' => 'Web Development', 'avatar' => null],
+        ['name' => 'Eman Ali', 'email' => 'eman@example.com', 'age' => 22, 'course' => 'Laravel Internship', 'avatar' => null],
+        ['name' => 'Fahad Khan', 'email' => 'fahad@example.com', 'age' => 23, 'course' => 'Database Management', 'avatar' => null],
+    ];
+    
+    foreach ($students as $student) {
+        App\Models\Student::create($student);
+    }
+    
+    return "15 more students seeded successfully! <a href='/students'>View Students</a>";
+});
+
+// ============================================
+// DAY 13 - ADMIN DASHBOARD
 // ============================================
 
 Route::middleware(['auth', 'admin'])->group(function () {
@@ -149,27 +174,21 @@ Route::middleware(['auth', 'admin'])->group(function () {
 });
 
 // ============================================
-// AUTHENTICATION ROUTES
+// AUTHENTICATION ROUTES (Login, Register, Logout)
 // ============================================
 
-// Login
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
 
 Route::post('/login', function () {
     $credentials = request()->only('email', 'password');
-
     if (auth()->attempt($credentials)) {
         return redirect('/admin/dashboard');
     }
-
-    return back()->withErrors([
-        'email' => 'The provided credentials do not match our records.',
-    ]);
+    return back()->withErrors(['email' => 'The provided credentials do not match our records.']);
 });
 
-// Register
 Route::get('/register', function () {
     return view('auth.register');
 })->name('register');
@@ -180,27 +199,28 @@ Route::post('/register', function () {
         'email' => 'required|email|unique:users',
         'password' => 'required|confirmed|min:8',
     ]);
-
     $user = App\Models\User::create([
         'name' => $data['name'],
         'email' => $data['email'],
         'password' => bcrypt($data['password']),
         'role' => 'student',
     ]);
-
     auth()->login($user);
-
     return redirect('/admin/dashboard');
 });
 
-// Logout
 Route::post('/logout', function () {
     auth()->logout();
     return redirect('/login');
 })->name('logout');
 
 // ============================================
-// DAY 15 - RESOURCE CONTROLLER
+// DASHBOARD REDIRECT
 // ============================================
 
-Route::resource('students', StudentController::class);
+Route::get('/dashboard', function () {
+    if (auth()->user()->role === 'admin') {
+        return redirect('/admin/dashboard');
+    }
+    return redirect('/student/dashboard');
+})->middleware(['auth'])->name('dashboard');

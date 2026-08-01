@@ -69,7 +69,7 @@
                 <tbody>
                     @foreach($students as $student)
                         @php
-                            $boyNames = ['Ahmed Ali', 'Hassan Ali'];
+                            $boyNames = ['Ahmed Ali', 'Hassan Ali', 'Usman Ali', 'Omar Farooq', 'Rayan Ahmed', 'Hamza Ali', 'Zain Ahmed', 'Hasan Raza', 'Daniyal Ahmed', 'Fahad Khan'];
                             if (in_array($student->name, $boyNames)) {
                                 $defaultAvatar = asset('storage/images/default-boy-avatar.png');
                             } else {
@@ -122,11 +122,15 @@
         </div>
         
         <!-- ===== PAGINATION ===== -->
-        <div class="d-flex justify-content-between align-items-center mt-4">
-            <p style="color: rgba(255,255,255,0.3); font-size: 0.9rem;">
-                Showing {{ $students->firstItem() }} to {{ $students->lastItem() }} of {{ $students->total() }} students
+        <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3" style="padding: 15px 0; border-top: 1px solid rgba(255,255,255,0.04);">
+            <p style="color: rgba(255,255,255,0.3); font-size: 0.85rem; margin: 0;">
+                Showing <strong style="color: rgba(255,255,255,0.6);">{{ $students->firstItem() }}</strong> 
+                to <strong style="color: rgba(255,255,255,0.6);">{{ $students->lastItem() }}</strong> 
+                of <strong style="color: #667eea;">{{ $students->total() }}</strong> results
             </p>
-            {{ $students->appends(request()->query())->links() }}
+            <div>
+                {{ $students->appends(request()->query())->links('vendor.pagination.bootstrap-4') }}
+            </div>
         </div>
     @endif
 </div>
@@ -138,35 +142,110 @@
         box-shadow: 0 8px 30px rgba(0,0,0,0.3);
     }
     
+    /* ===== BOOTSTRAP 4 PAGINATION STYLES ===== */
     .pagination {
         display: flex;
-        gap: 5px;
+        gap: 6px;
         list-style: none;
         padding: 0;
         margin: 0;
+        flex-wrap: wrap;
+        justify-content: flex-end;
     }
-    .pagination li a, .pagination li span {
+    .pagination li {
+        display: inline-block;
+    }
+    .pagination li a, 
+    .pagination li span {
         display: block;
-        padding: 8px 14px;
-        border-radius: 8px;
-        color: rgba(255,255,255,0.6);
+        padding: 8px 16px;
+        border-radius: 10px;
+        color: rgba(255,255,255,0.5);
         text-decoration: none;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         background: rgba(255,255,255,0.03);
         border: 1px solid rgba(255,255,255,0.06);
+        font-size: 0.85rem;
+        font-weight: 500;
+        min-width: 38px;
+        text-align: center;
+        cursor: pointer;
     }
     .pagination li a:hover {
-        background: rgba(102, 126, 234, 0.2);
+        background: rgba(102, 126, 234, 0.15);
         color: #ffffff;
+        border-color: rgba(102, 126, 234, 0.3);
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
     }
     .pagination li.active span {
         background: linear-gradient(135deg, #667eea, #764ba2);
         color: #ffffff;
         border-color: transparent;
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+        transform: scale(1.08);
+        font-weight: 700;
     }
     .pagination li.disabled span {
-        opacity: 0.3;
+        opacity: 0.15;
         cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    .pagination li:first-child a,
+    .pagination li:last-child a {
+        background: rgba(255,255,255,0.04);
+        border-color: rgba(255,255,255,0.08);
+        padding: 8px 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.5);
+        min-width: auto;
+        border-radius: 10px;
+    }
+    .pagination li:first-child a:hover,
+    .pagination li:last-child a:hover {
+        background: rgba(102, 126, 234, 0.15);
+        border-color: rgba(102, 126, 234, 0.3);
+        color: #ffffff;
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+    .pagination li .page-link {
+        background: transparent !important;
+        border: none !important;
+        color: rgba(255,255,255,0.15) !important;
+        padding: 8px 6px;
+        min-width: auto;
+        font-size: 0.85rem;
+        cursor: default;
+    }
+    .pagination li .page-link:hover {
+        transform: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+    @media (max-width: 600px) {
+        .pagination li a, 
+        .pagination li span {
+            padding: 6px 11px;
+            font-size: 0.75rem;
+            min-width: 32px;
+            border-radius: 8px;
+        }
+        .pagination li:first-child a,
+        .pagination li:last-child a {
+            padding: 6px 14px;
+            font-size: 0.75rem;
+        }
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            align-items: center !important;
+            gap: 8px;
+        }
+        .pagination {
+            justify-content: center;
+        }
     }
 </style>
 
