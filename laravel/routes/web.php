@@ -198,3 +198,9 @@ Route::post('/logout', function () {
     auth()->logout();
     return redirect('/login');
 })->name('logout');
+
+// ============================================
+// DAY 15 - RESOURCE CONTROLLER
+// ============================================
+
+Route::resource('students', StudentController::class);

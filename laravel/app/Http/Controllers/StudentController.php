@@ -7,10 +7,17 @@ use App\Models\Student;
 
 class StudentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $students = Student::all();
-        return view('student.index', compact('students'));
+        $search = $request->input('search');
+        
+        $students = Student::when($search, function ($query, $search) {
+            return $query->where('name', 'LIKE', "%{$search}%")
+                         ->orWhere('email', 'LIKE', "%{$search}%")
+                         ->orWhere('course', 'LIKE', "%{$search}%");
+        })->paginate(5);
+        
+        return view('student.index', compact('students', 'search'));
     }
 
     public function create()
@@ -44,27 +51,20 @@ class StudentController extends Controller
         return redirect('/students')->with('success', 'Student added successfully!');
     }
 
-    public function edit($id)
+    // ============================================
+    // ROUTE MODEL BINDING - Automatic Fetch
+    // ============================================
+    
+    public function edit(Student $student)
     {
-        $student = Student::find($id);
-        if ($student) {
-            return view('student.edit', compact('student'));
-        } else {
-            return redirect('/students')->with('error', 'Student not found!');
-        }
+        return view('student.edit', compact('student'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Student $student)
     {
-        $student = Student::find($id);
-
-        if (!$student) {
-            return redirect('/students')->with('error', 'Student not found!');
-        }
-
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:students,email,' . $id,
+            'email' => 'required|email|unique:students,email,' . $student->id,
             'age' => 'required|integer|min:1|max:150',
             'course' => 'required|string|max:255',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
@@ -72,7 +72,6 @@ class StudentController extends Controller
 
         $avatarPath = $student->avatar;
         if ($request->hasFile('avatar')) {
-            // Delete old avatar if exists
             if ($student->avatar && file_exists(storage_path('app/public/' . $student->avatar))) {
                 unlink(storage_path('app/public/' . $student->avatar));
             }
@@ -90,19 +89,12 @@ class StudentController extends Controller
         return redirect('/students')->with('success', 'Student updated successfully!');
     }
 
-    public function destroy($id)
+    public function destroy(Student $student)
     {
-        $student = Student::find($id);
-
-        if ($student) {
-            // Delete avatar if exists
-            if ($student->avatar && file_exists(storage_path('app/public/' . $student->avatar))) {
-                unlink(storage_path('app/public/' . $student->avatar));
-            }
-            $student->delete();
-            return redirect('/students')->with('success', 'Student deleted successfully!');
-        } else {
-            return redirect('/students')->with('error', 'Student not found!');
+        if ($student->avatar && file_exists(storage_path('app/public/' . $student->avatar))) {
+            unlink(storage_path('app/public/' . $student->avatar));
         }
+        $student->delete();
+        return redirect('/students')->with('success', 'Student deleted successfully!');
     }
 }

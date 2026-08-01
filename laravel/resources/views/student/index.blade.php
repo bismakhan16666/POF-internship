@@ -7,11 +7,28 @@
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
         <h1 class="page-title">Students List</h1>
-        <p class="page-subtitle">Total: {{ count($students) }} students</p>
+        <p class="page-subtitle">Total: {{ $students->total() }} students</p>
     </div>
     <a href="{{ route('students.create') }}" class="btn-primary-custom">
         <i class="fas fa-plus"></i> Add New Student
     </a>
+</div>
+
+<!-- ===== SEARCH FORM ===== -->
+<div class="card-custom mb-4">
+    <form method="GET" action="{{ route('students.index') }}" class="d-flex gap-2">
+        <input type="text" name="search" value="{{ request('search') }}" 
+               placeholder="Search by name, email or course..." 
+               class="form-control-custom" style="flex: 1;">
+        <button type="submit" class="btn-primary-custom" style="padding: 10px 25px;">
+            <i class="fas fa-search"></i> Search
+        </button>
+        @if(request('search'))
+            <a href="{{ route('students.index') }}" class="btn-primary-custom" style="background: #f5576c; padding: 10px 25px;">
+                <i class="fas fa-times"></i> Clear
+            </a>
+        @endif
+    </form>
 </div>
 
 @if(session('success'))
@@ -53,9 +70,11 @@
                     @foreach($students as $student)
                         @php
                             $boyNames = ['Ahmed Ali', 'Hassan Ali'];
-                            $defaultAvatar = in_array($student->name, $boyNames) 
-                                ? asset('storage/images/default-boy-avatar.png') 
-                                : asset('storage/images/default-avatar.png');
+                            if (in_array($student->name, $boyNames)) {
+                                $defaultAvatar = asset('storage/images/default-boy-avatar.png');
+                            } else {
+                                $defaultAvatar = asset('storage/images/default-avatar.png');
+                            }
                         @endphp
                         <tr style="background: rgba(255,255,255,0.03); border-radius: 12px; transition: all 0.3s ease;">
                             <td style="padding: 14px 18px; border: none; border-radius: 12px 0 0 12px;">
@@ -73,7 +92,7 @@
                                 </span>
                             </td>
                             <td style="padding: 14px 18px; border: none; border-radius: 0 12px 12px 0; text-align: center;">
-                                <a href="{{ route('students.edit', $student->id) }}" 
+                                <a href="{{ route('students.edit', $student) }}" 
                                    style="background: #667eea; border: none; color: #ffffff; padding: 4px 14px; border-radius: 50px; font-weight: 500; font-size: 0.75rem; text-decoration: none; display: inline-block; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
@@ -85,14 +104,12 @@
                                    style="background: #4facfe; border: none; color: #ffffff; padding: 4px 14px; border-radius: 50px; font-weight: 500; font-size: 0.75rem; text-decoration: none; display: inline-block; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);">
                                     <i class="fas fa-plus"></i> Enroll
                                 </a>
-                                <form action="{{ route('students.destroy', $student->id) }}" 
+                                <form action="{{ route('students.destroy', $student) }}" 
                                       method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" 
                                             style="background: transparent; border: 1px solid rgba(245, 87, 108, 0.3); color: #f5576c; padding: 4px 14px; border-radius: 50px; font-weight: 500; font-size: 0.75rem; cursor: pointer; transition: all 0.3s ease;"
-                                            onmouseover="this.style.background='rgba(245,87,108,0.1)'; this.style.color='#ff6b81';"
-                                            onmouseout="this.style.background='transparent'; this.style.color='#f5576c';"
                                             onclick="return confirm('Are you sure you want to delete this student?')">
                                         <i class="fas fa-trash"></i> Delete
                                     </button>
@@ -103,6 +120,14 @@
                 </tbody>
             </table>
         </div>
+        
+        <!-- ===== PAGINATION ===== -->
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <p style="color: rgba(255,255,255,0.3); font-size: 0.9rem;">
+                Showing {{ $students->firstItem() }} to {{ $students->lastItem() }} of {{ $students->total() }} students
+            </p>
+            {{ $students->appends(request()->query())->links() }}
+        </div>
     @endif
 </div>
 
@@ -111,6 +136,37 @@
         background: rgba(255,255,255,0.06) !important;
         transform: scale(1.01);
         box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+    
+    .pagination {
+        display: flex;
+        gap: 5px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .pagination li a, .pagination li span {
+        display: block;
+        padding: 8px 14px;
+        border-radius: 8px;
+        color: rgba(255,255,255,0.6);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.06);
+    }
+    .pagination li a:hover {
+        background: rgba(102, 126, 234, 0.2);
+        color: #ffffff;
+    }
+    .pagination li.active span {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #ffffff;
+        border-color: transparent;
+    }
+    .pagination li.disabled span {
+        opacity: 0.3;
+        cursor: not-allowed;
     }
 </style>
 

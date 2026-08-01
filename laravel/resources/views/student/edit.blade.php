@@ -21,15 +21,15 @@
                 </div>
             @endif
 
-            <!-- Show Current Avatar -->
             <div class="text-center mb-4">
-                <img src="{{ $student->avatar ? asset('storage/' . $student->avatar) : asset('images/default-avatar.png') }}" 
+                <img src="{{ $student->avatar ? asset('storage/' . $student->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($student->name) . '&background=667eea&color=fff&size=100&rounded=true' }}" 
                      alt="{{ $student->name }}" 
                      style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.1);">
                 <p style="color: rgba(255,255,255,0.3); font-size: 0.8rem; margin-top: 5px;">Current Avatar</p>
             </div>
 
-            <form action="{{ route('students.update', $student->id) }}" method="POST" enctype="multipart/form-data">
+            <!-- ===== FIX: route() mein $student pass karein ===== -->
+            <form action="{{ route('students.update', $student) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
