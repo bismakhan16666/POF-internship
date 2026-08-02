@@ -11,10 +11,13 @@ class CourseResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'code' => $this->code,
+            'credit_hours' => $this->credit_hours,
             'description' => $this->description,
-            'duration' => $this->duration,
-            'students_count' => $this->students->count(),
+            'students_count' => $this->students()->count(),
+            'students' => StudentResource::collection($this->whenLoaded('students')),
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
         ];
     }
 }

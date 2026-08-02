@@ -10,14 +10,9 @@ class Student extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'email',
-        'age',
-        'course',
-        'avatar'
+        'name', 'email', 'age', 'course_id', 'avatar'
     ];
 
-    // Many-to-Many relationship with Courses
     public function courses()
     {
         return $this->belongsToMany(Course::class)
@@ -25,19 +20,16 @@ class Student extends Model
                     ->withTimestamps();
     }
 
-    // Get all enrolled courses
-    public function getEnrolledCoursesAttribute()
+    public function course()
     {
-        return $this->courses()->get();
+        return $this->belongsTo(Course::class);
     }
 
-    // Check if student is enrolled in a specific course
     public function isEnrolledIn($courseId)
     {
         return $this->courses()->where('course_id', $courseId)->exists();
     }
 
-    // Get total credit hours
     public function getTotalCreditHoursAttribute()
     {
         return $this->courses()->sum('credit_hours');

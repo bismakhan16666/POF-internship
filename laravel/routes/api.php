@@ -11,9 +11,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 // ============================================
-// AUTHENTICATION
+// DAY 20 - COMPLETE REST API
 // ============================================
 
+// ========== AUTHENTICATION ==========
 Route::post('/register', function (Request $request) {
     $request->validate([
         'name' => 'required|string|max:255',
@@ -90,27 +91,73 @@ Route::get('/user', function (Request $request) {
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    // GET ALL STUDENTS with Courses (Many-to-Many)
-    Route::get('/students', function () {
-        $students = Student::with('courses')->get();  // ← 'courses' not 'course'
+    // ===== SEARCH STUDENTS =====
+    Route::get('/students/search', function (Request $request) {
+        $query = Student::query()->with('courses');
+
+        // Search by name
+        if ($request->has('name')) {
+            $query->where('name', 'LIKE', '%' . $request->name . '%');
+        }
+
+        // Search by email
+        if ($request->has('email')) {
+            $query->where('email', 'LIKE', '%' . $request->email . '%');
+        }
+
+        // Filter by course
+        if ($request->has('course_id')) {
+            $query->whereHas('courses', function ($q) use ($request) {
+                $q->where('course_id', $request->course_id);
+            });
+        }
+
+        // Pagination
+        $perPage = $request->per_page ?? 10;
+        $students = $query->paginate($perPage);
+
         return response()->json([
             'success' => true,
             'message' => 'Students retrieved successfully',
-            'data' => StudentResource::collection($students)
+            'data' => StudentResource::collection($students),
+            'meta' => [
+                'current_page' => $students->currentPage(),
+                'per_page' => $students->perPage(),
+                'total' => $students->total(),
+                'last_page' => $students->lastPage(),
+            ]
         ], 200);
     });
 
-    // GET SINGLE STUDENT with Courses
+    // ===== GET ALL STUDENTS (With Pagination) =====
+    Route::get('/students', function (Request $request) {
+        $perPage = $request->per_page ?? 10;
+        $students = Student::with('courses')->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Students retrieved successfully',
+            'data' => StudentResource::collection($students),
+            'meta' => [
+                'current_page' => $students->currentPage(),
+                'per_page' => $students->perPage(),
+                'total' => $students->total(),
+                'last_page' => $students->lastPage(),
+            ]
+        ], 200);
+    });
+
+    // ===== GET SINGLE STUDENT =====
     Route::get('/students/{id}', function ($id) {
         $student = Student::with('courses')->find($id);
-        
+
         if (!$student) {
             return response()->json([
                 'success' => false,
                 'message' => 'Student not found'
             ], 404);
         }
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Student retrieved successfully',
@@ -118,23 +165,30 @@ Route::middleware('auth:sanctum')->group(function () {
         ], 200);
     });
 
-    // CREATE STUDENT
+    // ===== CREATE STUDENT (With File Upload) =====
     Route::post('/students', function (Request $request) {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:students,email',
             'age' => 'required|integer|min:1|max:150',
-            'course_id' => 'required|exists:courses,id'  // ← course_id required
+            'course_id' => 'required|exists:courses,id',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
         $student = Student::create([
             'name' => $request->name,
             'email' => $request->email,
             'age' => $request->age,
-            'course_id' => $request->course_id
+            'course_id' => $request->course_id,
         ]);
 
-        // Enroll student in the course automatically
+        // Handle Avatar Upload
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $student->update(['avatar' => $path]);
+        }
+
+        // Enroll in course
         $student->courses()->attach($request->course_id, [
             'enrollment_date' => now()->format('Y-m-d')
         ]);
@@ -146,10 +200,10 @@ Route::middleware('auth:sanctum')->group(function () {
         ], 201);
     });
 
-    // UPDATE STUDENT
+    // ===== UPDATE STUDENT =====
     Route::put('/students/{id}', function (Request $request, $id) {
         $student = Student::find($id);
-        
+
         if (!$student) {
             return response()->json([
                 'success' => false,
@@ -161,15 +215,21 @@ Route::middleware('auth:sanctum')->group(function () {
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:students,email,' . $id,
             'age' => 'required|integer|min:1|max:150',
-            'course_id' => 'required|exists:courses,id'
+            'course_id' => 'required|exists:courses,id',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
         $student->update([
             'name' => $request->name,
             'email' => $request->email,
             'age' => $request->age,
-            'course_id' => $request->course_id
+            'course_id' => $request->course_id,
         ]);
+
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $student->update(['avatar' => $path]);
+        }
 
         return response()->json([
             'success' => true,
@@ -178,10 +238,10 @@ Route::middleware('auth:sanctum')->group(function () {
         ], 200);
     });
 
-    // DELETE STUDENT
+    // ===== DELETE STUDENT =====
     Route::delete('/students/{id}', function ($id) {
         $student = Student::find($id);
-        
+
         if (!$student) {
             return response()->json([
                 'success' => false,
@@ -197,7 +257,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ], 200);
     });
 
-    // ENROLL STUDENT IN COURSE
+    // ===== ENROLL STUDENT =====
     Route::post('/students/{studentId}/enroll/{courseId}', function ($studentId, $courseId) {
         $student = Student::find($studentId);
         $course = Course::find($courseId);
@@ -234,7 +294,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ], 201);
     });
 
-    // UNENROLL STUDENT FROM COURSE
+    // ===== UNENROLL STUDENT =====
     Route::delete('/students/{studentId}/unenroll/{courseId}', function ($studentId, $courseId) {
         $student = Student::find($studentId);
         $course = Course::find($courseId);
@@ -274,25 +334,35 @@ Route::middleware('auth:sanctum')->group(function () {
 // COURSE API (Public)
 // ============================================
 
-Route::get('/courses', function () {
-    $courses = Course::with('students')->get();
+// ===== GET ALL COURSES =====
+Route::get('/courses', function (Request $request) {
+    $perPage = $request->per_page ?? 10;
+    $courses = Course::with('students')->paginate($perPage);
+
     return response()->json([
         'success' => true,
         'message' => 'Courses retrieved successfully',
-        'data' => CourseResource::collection($courses)
+        'data' => CourseResource::collection($courses),
+        'meta' => [
+            'current_page' => $courses->currentPage(),
+            'per_page' => $courses->perPage(),
+            'total' => $courses->total(),
+            'last_page' => $courses->lastPage(),
+        ]
     ], 200);
 });
 
+// ===== GET SINGLE COURSE =====
 Route::get('/courses/{id}', function ($id) {
     $course = Course::with('students')->find($id);
-    
+
     if (!$course) {
         return response()->json([
             'success' => false,
             'message' => 'Course not found'
         ], 404);
     }
-    
+
     return response()->json([
         'success' => true,
         'message' => 'Course retrieved successfully',
@@ -300,6 +370,7 @@ Route::get('/courses/{id}', function ($id) {
     ], 200);
 });
 
+// ===== CREATE COURSE =====
 Route::post('/courses', function (Request $request) {
     $request->validate([
         'name' => 'required|string|max:255',
@@ -322,9 +393,10 @@ Route::post('/courses', function (Request $request) {
     ], 201);
 });
 
+// ===== UPDATE COURSE =====
 Route::put('/courses/{id}', function (Request $request, $id) {
     $course = Course::find($id);
-    
+
     if (!$course) {
         return response()->json([
             'success' => false,
@@ -353,9 +425,10 @@ Route::put('/courses/{id}', function (Request $request, $id) {
     ], 200);
 });
 
+// ===== DELETE COURSE =====
 Route::delete('/courses/{id}', function ($id) {
     $course = Course::find($id);
-    
+
     if (!$course) {
         return response()->json([
             'success' => false,
@@ -377,7 +450,7 @@ Route::delete('/courses/{id}', function ($id) {
 
 Route::get('/seed-courses', function () {
     Course::truncate();
-    
+
     $courses = [
         ['name' => 'Laravel Internship', 'code' => 'LAR-101', 'credit_hours' => 3, 'description' => 'Complete Laravel development course'],
         ['name' => 'Web Development', 'code' => 'WEB-101', 'credit_hours' => 4, 'description' => 'HTML, CSS, JavaScript, PHP'],
@@ -385,11 +458,11 @@ Route::get('/seed-courses', function () {
         ['name' => 'React Native', 'code' => 'RN-101', 'credit_hours' => 3, 'description' => 'Mobile app development'],
         ['name' => 'Python Programming', 'code' => 'PY-101', 'credit_hours' => 3, 'description' => 'Python from basics to advanced'],
     ];
-    
+
     foreach ($courses as $course) {
         Course::create($course);
     }
-    
+
     return response()->json([
         'success' => true,
         'message' => '5 courses seeded successfully',

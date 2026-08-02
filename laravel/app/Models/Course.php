@@ -10,13 +10,9 @@ class Course extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'code',
-        'credit_hours',
-        'description'
+        'name', 'code', 'credit_hours', 'description'
     ];
 
-    // Many-to-Many relationship with Students
     public function students()
     {
         return $this->belongsToMany(Student::class)
@@ -24,16 +20,8 @@ class Course extends Model
                     ->withTimestamps();
     }
 
-    // Get total students count
     public function getStudentsCountAttribute()
     {
         return $this->students()->count();
-    }
-
-    // Get course duration in weeks (if needed)
-    public function getDurationInWeeksAttribute()
-    {
-        // Assuming each credit hour = 1 week
-        return $this->credit_hours * 1;
     }
 }

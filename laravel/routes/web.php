@@ -224,3 +224,4 @@ Route::get('/dashboard', function () {
     }
     return redirect('/student/dashboard');
 })->middleware(['auth'])->name('dashboard');
+require __DIR__.'/auth.php';

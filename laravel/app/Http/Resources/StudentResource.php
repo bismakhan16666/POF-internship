@@ -13,10 +13,9 @@ class StudentResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'age' => $this->age,
-            'course' => $this->course,  // Single course (if exists)
             'avatar' => $this->avatar ? asset('storage/' . $this->avatar) : null,
             'courses' => CourseResource::collection($this->whenLoaded('courses')),
-            'total_credit_hours' => $this->courses()->sum('credit_hours'),
+            'total_credit_hours' => $this->total_credit_hours,
             'enrolled_courses_count' => $this->courses()->count(),
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
