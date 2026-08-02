@@ -19,6 +19,21 @@ class Course extends Model
     // Many-to-Many relationship with Students
     public function students()
     {
-        return $this->belongsToMany(Student::class)->withPivot('enrollment_date')->withTimestamps();
+        return $this->belongsToMany(Student::class)
+                    ->withPivot('enrollment_date')
+                    ->withTimestamps();
+    }
+
+    // Get total students count
+    public function getStudentsCountAttribute()
+    {
+        return $this->students()->count();
+    }
+
+    // Get course duration in weeks (if needed)
+    public function getDurationInWeeksAttribute()
+    {
+        // Assuming each credit hour = 1 week
+        return $this->credit_hours * 1;
     }
 }
