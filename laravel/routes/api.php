@@ -3,119 +3,193 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\Student;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 // ============================================
-// DAY 17 - API CRUD WITH VALIDATION
+// DAY 18 - API AUTHENTICATION (SANCTUM)
 // ============================================
 
-// ========== 1. GET ALL STUDENTS ==========
-Route::get('/students', function () {
-    $students = Student::all();
-    
-    return response()->json([
-        'success' => true,
-        'message' => 'Students retrieved successfully',
-        'data' => $students
-    ], 200);
-});
-
-// ========== 2. GET SINGLE STUDENT ==========
-Route::get('/students/{id}', function ($id) {
-    $student = Student::find($id);
-    
-    if (!$student) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Student not found'
-        ], 404);
-    }
-    
-    return response()->json([
-        'success' => true,
-        'message' => 'Student retrieved successfully',
-        'data' => $student
-    ], 200);
-});
-
-// ========== 3. CREATE STUDENT (POST) ==========
-Route::post('/students', function (Request $request) {
+// ========== 1. REGISTER API ==========
+Route::post('/register', function (Request $request) {
     // Validation
     $request->validate([
         'name' => 'required|string|max:255',
-        'email' => 'required|email|unique:students,email',
-        'age' => 'required|integer|min:1|max:150',
-        'course' => 'required|string|max:255'
+        'email' => 'required|email|unique:users',
+        'password' => 'required|string|min:8|confirmed',
     ]);
 
-    // Create student
-    $student = Student::create([
+    // Create User
+    $user = User::create([
         'name' => $request->name,
         'email' => $request->email,
-        'age' => $request->age,
-        'course' => $request->course
+        'password' => Hash::make($request->password),
+        'role' => 'student',
     ]);
+
+    // Create Token
+    $token = $user->createToken('auth_token')->plainTextToken;
 
     return response()->json([
         'success' => true,
-        'message' => 'Student created successfully',
-        'data' => $student
+        'message' => 'User registered successfully',
+        'data' => [
+            'user' => $user,
+            'token' => $token,
+            'token_type' => 'Bearer'
+        ]
     ], 201);
 });
 
-// ========== 4. UPDATE STUDENT (PUT) ==========
-Route::put('/students/{id}', function (Request $request, $id) {
-    $student = Student::find($id);
-    
-    if (!$student) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Student not found'
-        ], 404);
+// ========== 2. LOGIN API ==========
+Route::post('/login', function (Request $request) {
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
+
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        throw ValidationException::withMessages([
+            'email' => ['The provided credentials are incorrect.'],
+        ]);
     }
 
-    // Validation
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|unique:students,email,' . $id,
-        'age' => 'required|integer|min:1|max:150',
-        'course' => 'required|string|max:255'
-    ]);
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Login successful',
+        'data' => [
+            'user' => $user,
+            'token' => $token,
+            'token_type' => 'Bearer'
+        ]
+    ], 200);
+});
+
+// ========== 3. LOGOUT API ==========
+Route::post('/logout', function (Request $request) {
+    $request->user()->currentAccessToken()->delete();
+    return response()->json([
+        'success' => true,
+        'message' => 'Logout successful'
+    ], 200);
+})->middleware('auth:sanctum');
+
+// ========== 4. GET USER PROFILE ==========
+Route::get('/user', function (Request $request) {
+    return response()->json([
+        'success' => true,
+        'message' => 'User retrieved successfully',
+        'data' => $request->user()
+    ], 200);
+})->middleware('auth:sanctum');
+
+// ========== 5. STUDENT CRUD (Protected) ==========
+Route::middleware('auth:sanctum')->group(function () {
+    // Get all students
+    Route::get('/students', function () {
+        $students = Student::all();
+        return response()->json([
+            'success' => true,
+            'message' => 'Students retrieved successfully',
+            'data' => $students
+        ], 200);
+    });
+
+    // Get single student
+    Route::get('/students/{id}', function ($id) {
+        $student = Student::find($id);
+        if (!$student) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Student not found'
+            ], 404);
+        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Student retrieved successfully',
+            'data' => $student
+        ], 200);
+    });
+
+    // Create student
+    Route::post('/students', function (Request $request) {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:students,email',
+            'age' => 'required|integer|min:1|max:150',
+            'course' => 'required|string|max:255'
+        ]);
+
+        $student = Student::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'age' => $request->age,
+            'course' => $request->course
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Student created successfully',
+            'data' => $student
+        ], 201);
+    });
 
     // Update student
-    $student->update([
-        'name' => $request->name,
-        'email' => $request->email,
-        'age' => $request->age,
-        'course' => $request->course
-    ]);
+    Route::put('/students/{id}', function (Request $request, $id) {
+        $student = Student::find($id);
+        if (!$student) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Student not found'
+            ], 404);
+        }
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Student updated successfully',
-        'data' => $student
-    ], 200);
-});
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:students,email,' . $id,
+            'age' => 'required|integer|min:1|max:150',
+            'course' => 'required|string|max:255'
+        ]);
 
-// ========== 5. DELETE STUDENT ==========
-Route::delete('/students/{id}', function ($id) {
-    $student = Student::find($id);
-    
-    if (!$student) {
+        $student->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'age' => $request->age,
+            'course' => $request->course
+        ]);
+
         return response()->json([
-            'success' => false,
-            'message' => 'Student not found'
-        ], 404);
-    }
+            'success' => true,
+            'message' => 'Student updated successfully',
+            'data' => $student
+        ], 200);
+    });
 
-    $student->delete();
+    // Delete student
+    Route::delete('/students/{id}', function ($id) {
+        $student = Student::find($id);
+        if (!$student) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Student not found'
+            ], 404);
+        }
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Student deleted successfully'
-    ], 200);
+        $student->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Student deleted successfully'
+        ], 200);
+    });
 });
 
-// ========== 6. SEED STUDENTS ==========
+// ========== 6. SEED STUDENTS (Public) ==========
 Route::get('/seed', function () {
     Student::truncate();
     
@@ -138,7 +212,7 @@ Route::get('/seed', function () {
     ], 201);
 });
 
-// ========== 7. HEALTH CHECK ==========
+// ========== 7. HEALTH CHECK (Public) ==========
 Route::get('/health', function () {
     return response()->json([
         'status' => 'OK',
